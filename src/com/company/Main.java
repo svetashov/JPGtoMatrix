@@ -1,6 +1,6 @@
 package com.company;
 
-import sun.plugin.dom.css.RGBColor;
+
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -10,13 +10,20 @@ import java.io.IOException;
 
 public class Main {
 
-    private static final String ROOT_PATH = "J:\\Workspace\\IntellijIDEA Workspace\\JPGtoMatrix\\res\\";
+    private static final String ROOT_PATH = "D:\\Workspace\\Intellij Workspace\\JPGtoMatrix\\res\\";
     private static final float RED_COEFFICIENT = 0.299f;
     private static final float BLUE_COEFFICIENT = 0.114f;
     private static final float GREEN_COEFFICIENT = 0.587f;
 
     public static void main(String[] args) {
-        convertToBMP(ROOT_PATH + "test.jpg", ROOT_PATH + "test.bmp");
+        File input = new File(ROOT_PATH+"img.jpg");
+        File output = new File(ROOT_PATH+"result.jpg");
+        try {
+            BufferedImage in = ImageIO.read(input);
+            ImageIO.write(getGrayScaleImage(in), "jpg", output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void convertToBMP(String pathJPG, String pathBMP) {
