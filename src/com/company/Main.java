@@ -34,6 +34,7 @@ public class Main {
             File output = new File(pathBMP);
             BufferedImage outImage;
 
+
             ImageIO.write(image, "bmp", output);
         } catch (IOException e) {
             System.err.println("Error, cannot read to the buffer");
