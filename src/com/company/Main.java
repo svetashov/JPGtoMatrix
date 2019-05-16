@@ -1,11 +1,11 @@
 package com.company;
 
 
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Main {
@@ -16,14 +16,7 @@ public class Main {
     private static final float GREEN_COEFFICIENT = 0.587f;
 
     public static void main(String[] args) {
-        File input = new File(ROOT_PATH+"img.jpg");
-        File output = new File(ROOT_PATH+"result.jpg");
-        try {
-            BufferedImage in = ImageIO.read(input);
-            ImageIO.write(getGrayScaleImage(in), "jpg", output);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        convertDirectory(ROOT_PATH);
     }
 
     public static void convertToBMP(String pathJPG, String pathBMP) {
@@ -62,17 +55,79 @@ public class Main {
         return grayScale;
     }
 
+    public static BufferedImage imageFromFile(String path) throws IOException {
+        File input = new File(path);
+        return ImageIO.read(input);
+    }
+
     public static BufferedImage getGrayScaleImage(BufferedImage input) {
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < input.getWidth(); i++)
             for (int j = 0; j < input.getHeight(); j++)
-                output.setRGB(i, j, getGrayScale(new Color(input.getRGB(i,j))).getRGB());
+                output.setRGB(i, j, getGrayScale(new Color(input.getRGB(i, j))).getRGB());
         return output;
     }
 
     public static void printMatrix(int[][] matrix) {
-        for (int[] vector : matrix)
+        for (int[] vector : matrix) {
             for (int elem : vector)
-                System.out.println(elem);
+                System.out.printf("%4d ", elem);
+            System.out.println();
+        }
     }
+
+    public static void convertJPGToGrayScale(String inputPath, String outputPath) {
+        File input = new File(inputPath);
+        File output = new File(outputPath);
+        try {
+            BufferedImage in = ImageIO.read(input);
+            if (ImageIO.write(getGrayScaleImage(in), "jpg", output))
+                System.out.println("Successfully converted " + input.getName() + " to the " + output.getName());
+            else
+                System.out.println("Error converting " + inputPath);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean isJPG(String name) {
+        return (name.contains(".jpg") || name.contains(".jpeg"));
+    }
+
+    public static void convertDirectory(String path) {
+        System.out.println("Start converting " + path);
+        File directory = new File(path);
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            for (File file : files)
+                if (file.isFile() && isJPG(file.getName())) {
+                    String name = file.getName().substring(0, file.getName().indexOf("."));
+                    convertJPGToGrayScale(path + name + ".jpg", path + "gs_" + name + ".jpg");
+                    try {
+                        BufferedImage image = imageFromFile(path + name + ".jpg");
+                        writeMatrixInFile(path + name + ".txt", getGrayScaleFromImage(image));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+        } else
+            System.out.println("Path is not directory");
+    }
+
+    public static void writeMatrixInFile(String path, int[][] matrix) {
+        try (FileWriter writer = new FileWriter(path, false)) {
+            for (int[] vector : matrix) {
+                for (int x : vector) {
+                    writer.write(String.valueOf(x));
+                    writer.write(" ");
+                }
+                writer.write("\n");
+            }
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
