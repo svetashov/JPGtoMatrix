@@ -10,13 +10,25 @@ import java.io.IOException;
 
 public class Main {
 
-    private static final String ROOT_PATH = "D:\\Workspace\\Intellij Workspace\\JPGtoMatrix\\res\\";
+    private static final String ROOT_PATH = "C:\\Users\\User\\Desktop\\test\\";
+    private static final int SIZE = 4;
     private static final float RED_COEFFICIENT = 0.299f;
     private static final float BLUE_COEFFICIENT = 0.114f;
     private static final float GREEN_COEFFICIENT = 0.587f;
 
     public static void main(String[] args) {
-        convertDirectory(ROOT_PATH);
+        //convertDirectory(ROOT_PATH);
+        try {
+            int matrix[][] = getGrayScaleFromImage(imageFromFile(ROOT_PATH + "matrix1.jpg"));
+            int pooled[][] = pooling(matrix);
+            //printMatrix(pooled);
+            System.out.println();
+            //printMatrix(matrix);
+            createImage(ROOT_PATH + "matrix1_1.jpg", imageFromMatrix(pooled));
+            writeMatrixInFile(ROOT_PATH+"matr.txt", pooled);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void convertToBMP(String pathJPG, String pathBMP) {
@@ -35,6 +47,22 @@ public class Main {
 
     }
 
+    public static int[][] pooling(int[][] raw) {
+        int len = raw.length;
+        int width = raw[1].length;
+        int[][] result = new int[len / SIZE][width / SIZE];
+        for (int i = 0; i <= len - SIZE; i += SIZE)
+            for (int j = 0; j <= width - SIZE; j += SIZE) {
+                int max = 255;
+                for (int m = i; m < i + SIZE; m++)
+                    for (int n = j; n < j + SIZE; n++)
+                        if (raw[m][n] < max)
+                            max = raw[m][n];
+                result[i / SIZE][j / SIZE] = max;
+            }
+        return result;
+    }
+
     public static Color getGrayScale(Color input) {
         int gray = Math.round(RED_COEFFICIENT * input.getRed() + BLUE_COEFFICIENT * input.getBlue() + GREEN_COEFFICIENT * input.getGreen());
         return new Color(gray, gray, gray);
@@ -48,7 +76,7 @@ public class Main {
         for (int i = 0; i < w; i++)
             for (int j = 0; j < h; j++) {
                 Color color = new Color(image.getRGB(i, j));
-                grayScale[i][j] = Math.round(RED_COEFFICIENT * color.getRed() +
+                grayScale[i][j] = 255 - Math.round(RED_COEFFICIENT * color.getRed() +
                         BLUE_COEFFICIENT * color.getBlue() +
                         GREEN_COEFFICIENT * color.getGreen());
             }
@@ -90,6 +118,25 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+    public static BufferedImage imageFromMatrix(int[][] matrix) {
+        BufferedImage image = new BufferedImage(matrix.length, matrix[1].length, BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < matrix.length; i++)
+            for (int j = 0; j < matrix[1].length; j++)
+                image.setRGB(i, j, (new Color(matrix[i][j], matrix[i][j], matrix[i][j])).getRGB());
+        return image;
+    }
+
+    public static void createImage(String path, BufferedImage image){
+        File output = new File(path);
+        try {
+            ImageIO.write(image, "jpg", output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public static boolean isJPG(String name) {
         return (name.contains(".jpg") || name.contains(".jpeg"));
