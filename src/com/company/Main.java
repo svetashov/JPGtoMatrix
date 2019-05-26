@@ -7,10 +7,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Random;
 
 public class Main {
 
-    private static final String ROOT_PATH = "C:\\Users\\User\\Desktop\\test\\";
+    private static final String ROOT_PATH = "J:\\Workspace\\IntellijIDEA Workspace\\JPGtoMatrix\\res\\";
     private static final int SIZE = 4;
     private static final float RED_COEFFICIENT = 0.299f;
     private static final float BLUE_COEFFICIENT = 0.114f;
@@ -19,13 +20,13 @@ public class Main {
     public static void main(String[] args) {
         //convertDirectory(ROOT_PATH);
         try {
-            int matrix[][] = getGrayScaleFromImage(imageFromFile(ROOT_PATH + "matrix1.jpg"));
+            int matrix[][] = getGrayScaleFromImage(imageFromFile(ROOT_PATH + "test.jpg"));
             int pooled[][] = pooling(matrix);
             //printMatrix(pooled);
             System.out.println();
             //printMatrix(matrix);
-            createImage(ROOT_PATH + "matrix1_1.jpg", imageFromMatrix(pooled));
-            writeMatrixInFile(ROOT_PATH+"matr.txt", pooled);
+            createImage(ROOT_PATH + "test.jpg", imageFromMatrix(pooled));
+            writeMatrixInFile(ROOT_PATH + "matr.txt", pooled);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,7 +128,7 @@ public class Main {
         return image;
     }
 
-    public static void createImage(String path, BufferedImage image){
+    public static void createImage(String path, BufferedImage image) {
         File output = new File(path);
         try {
             ImageIO.write(image, "jpg", output);
@@ -135,7 +136,6 @@ public class Main {
             e.printStackTrace();
         }
     }
-
 
 
     public static boolean isJPG(String name) {
@@ -175,6 +175,25 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /*
+     * Функции для обработки и генерации изображений с разными положениями
+     */
+
+    private static final int LOWER_BOUND = 5;
+    private static final int HIGHER_BOUND = 25;
+
+
+    public static int[][] getBackground(int width, int height) {
+        int[][] result = new int[width][height];
+        Random random = new Random();
+        int new_low = LOWER_BOUND + random.nextInt(HIGHER_BOUND - LOWER_BOUND + 5);
+        int new_hi = new_low + 5;
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
+                result[i][j] = random.nextInt(new_hi - new_low + 1) + new_low;
+        return result;
     }
 
 }
