@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Main {
 
@@ -19,17 +20,20 @@ public class Main {
 
     public static void main(String[] args) {
         //convertDirectory(ROOT_PATH);
+        /*
         try {
             int matrix[][] = getGrayScaleFromImage(imageFromFile(ROOT_PATH + "test.jpg"));
             int pooled[][] = pooling(matrix);
             //printMatrix(pooled);
             System.out.println();
             //printMatrix(matrix);
-            createImage(ROOT_PATH + "test.jpg", imageFromMatrix(pooled));
+            saveImage(ROOT_PATH + "test.jpg", imageFromMatrix(pooled));
             writeMatrixInFile(ROOT_PATH + "matr.txt", pooled);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
+        savePhotoVersions(ROOT_PATH + "test.jpg", ROOT_PATH);
     }
 
     public static void convertToBMP(String pathJPG, String pathBMP) {
@@ -121,14 +125,14 @@ public class Main {
     }
 
     public static BufferedImage imageFromMatrix(int[][] matrix) {
-        BufferedImage image = new BufferedImage(matrix.length, matrix[1].length, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(matrix.length, matrix[0].length, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < matrix.length; i++)
-            for (int j = 0; j < matrix[1].length; j++)
+            for (int j = 0; j < matrix[0].length; j++)
                 image.setRGB(i, j, (new Color(matrix[i][j], matrix[i][j], matrix[i][j])).getRGB());
         return image;
     }
 
-    public static void createImage(String path, BufferedImage image) {
+    public static void saveImage(String path, BufferedImage image) {
         File output = new File(path);
         try {
             ImageIO.write(image, "jpg", output);
@@ -183,6 +187,8 @@ public class Main {
 
     private static final int LOWER_BOUND = 5;
     private static final int HIGHER_BOUND = 25;
+    private static final int POSITIONS = 5;
+    private static final int BACKGROUNDS = 5;
 
 
     public static int[][] getBackground(int width, int height) {
@@ -196,4 +202,57 @@ public class Main {
         return result;
     }
 
+    public static int[][] randomPosition(int[][] background, int[][] res) {
+        int w_b = background.length;
+        int h_b = background[0].length;
+        int w_r = res.length;
+        int h_r = res[0].length;
+
+        int wRange = w_b - w_r;
+        int hRange = h_b - h_r;
+
+        Random random = new Random();
+        int x = random.nextInt(wRange);
+        int y = random.nextInt(hRange);
+
+        for (int i = 0; i < w_r; i++)
+            for (int j = 0; j < h_r; j++)
+                background[i+x][j+y] = res[i][j];
+        return background;
+    }
+
+    public static int inputInt(String message, int min, int max) {
+        System.out.println(message);
+        Scanner scanner = new Scanner(System.in);
+        int result = scanner.nextInt();
+        while (result < min || result > max) {
+            System.out.println("Error, enter again");
+            result = scanner.nextInt();
+        }
+        return result;
+    }
+
+    public static void savePhotoVersions(String imagePath, String directory) {
+        try {
+            BufferedImage image = imageFromFile(imagePath);
+            int[][] res = getGrayScaleFromImage(image);
+            File file = new File(directory);
+            if (!file.isDirectory())
+                System.out.println("ERR: " + directory + " is not a directory");
+            else {
+                int w = inputInt("Введите ширину", res.length, res.length + 100);
+                int h = inputInt("Введите высоту", res[0].length, res[0].length + 100);
+                for (int i = 0; i < BACKGROUNDS; i++) {
+                    int[][] background = getBackground(w, h);
+                    for (int j = 0; j < POSITIONS; j++) {
+                        saveImage(directory+String.valueOf(i)+"_"+String.valueOf(j)+".jpg", imageFromMatrix(randomPosition(background, res)));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }
